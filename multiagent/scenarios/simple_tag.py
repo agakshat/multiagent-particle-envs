@@ -144,3 +144,10 @@ class Scenario(BaseScenario):
             if not other.adversary:
                 other_vel.append(other.state.p_vel)
         return np.concatenate([agent.state.p_vel] + [agent.state.p_pos] + entity_pos + other_pos + other_vel)
+
+    def done(self, agent, world):
+        for p in range(world.dim_p):
+            x = abs(agent.state.p_pos[p])
+            if (x>1.0):
+                return True
+        return False       

@@ -11,7 +11,7 @@ class MultiAgentEnv(gym.Env):
     }
 
     def __init__(self, world, reset_callback=None, reward_callback=None,
-                 observation_callback=None, info_callback=None,
+                 observation_callback=None, info_callback=None, done_callback=None,
                  shared_viewer=True):
 
         self.world = world
@@ -23,6 +23,7 @@ class MultiAgentEnv(gym.Env):
         self.reward_callback = reward_callback
         self.observation_callback = observation_callback
         self.info_callback = info_callback
+        self.done_callback = done_callback
         # environment parameters
         self.discrete_action_space = True
         # if true, action is a number 0...N, otherwise action is a one-hot N-dimensional vector
@@ -90,7 +91,7 @@ class MultiAgentEnv(gym.Env):
         for agent in self.agents:
             obs_n.append(self._get_obs(agent))
             reward_n.append(self._get_reward(agent))
-            done_n.append(False)
+            done_n.append(self._get_done(agent))
             info_n['n'].append(self._get_info(agent))
 
         # all agents get total reward in cooperative case
@@ -129,6 +130,11 @@ class MultiAgentEnv(gym.Env):
         if self.reward_callback is None:
             return 0.0
         return self.reward_callback(agent, self.world)
+
+    def _get_done(self, agent):
+        if self.done_callback is None:
+            return False
+        return self.done_callback(agent,self.world)
 
     # set env action for a particular agent
     def _set_action(self, action, agent, action_space, time=None):
@@ -198,7 +204,7 @@ class MultiAgentEnv(gym.Env):
                     else:
                         word = alphabet[np.argmax(other.state.c)]
                     message += (other.name + ' to ' + agent.name + ': ' + word + '   ')
-            print(message)
+            #print(message)
 
         if close:
             # close any existic renderers
