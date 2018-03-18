@@ -11,7 +11,7 @@ class MultiAgentEnv(gym.Env):
     }
 
     def __init__(self, world, reset_callback=None, reward_callback=None,
-                 observation_callback=None, info_callback=None, done_callback=None,
+                     observation_callback=None, info_callback=None, done_callback=None,
                  shared_viewer=True):
 
         self.world = world
@@ -125,6 +125,12 @@ class MultiAgentEnv(gym.Env):
             return np.zeros(0)
         return self.observation_callback(agent, self.world)
 
+    # get dones for a particular agent
+    def _get_done(self, agent):
+        if self.done_callback is None:
+            return False
+        return self.observation_callback(agent, self.world)
+
     # get reward for a particular agent
     def _get_reward(self, agent):
         if self.reward_callback is None:
@@ -181,6 +187,8 @@ class MultiAgentEnv(gym.Env):
             if self.discrete_action_input:
                 agent.action.c = np.zeros(self.world.dim_c)
                 agent.action.c[action[0]] = 1.0
+            else:
+                agent.action.c = action[0]
             action = action[1:]
         # make sure we used all elements of action
         assert len(action) == 0
